@@ -39,4 +39,33 @@ class ApiService {
       throw Exception('Failed to update book');
     }
   }
+
+  // Fungsi untuk menambahkan buku baru
+  Future<void> addBook(Map<String, dynamic> bookData) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/books'),
+      headers: {
+        'Authorization': 'my-static-token-123',
+        'Content-Type': 'application/json',
+      },
+      body: json.encode(bookData),
+    );
+    if (response.statusCode != 201) {
+      throw Exception('Failed to add book');
+    }
+  }
+
+  // Fungsi untuk menghapus buku
+  Future<void> deleteBook(String id) async {
+    final response = await http.delete(
+      Uri.parse('$baseUrl/books/$id'),
+      headers: {
+        'Authorization': 'my-static-token-123',
+        'Content-Type': 'application/json',
+      },
+    );
+    if (response.statusCode != 204) {
+      throw Exception('Failed to delete book');
+    }
+  }
 }
