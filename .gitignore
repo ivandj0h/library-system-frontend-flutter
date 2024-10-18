@@ -1,0 +1,66 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# VS Code related
+.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Generated files related to the Flutter framework
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/Generated.xcconfig
+ios/Flutter/ephemeral/
+ios/ServiceDefinitions.json
+macos/Flutter/Flutter.podspec
+macos/Flutter/Generated.xcconfig
+macos/Flutter/ephemeral/
+windows/flutter/generated_plugin_registrant.cc
+linux/flutter/generated_plugin_registrant.cc
+web/.dart_tool/
+
+# ide related
+.vscode
+.idea
+build/
+.metadata
+.packages
+*.iml
+.dart_tool/
+
+# Lock file (Optional, if you don't want to push lock file)
+pubspec.lock
