@@ -5,25 +5,23 @@ class ApiService {
   final String baseUrl = 'http://localhost:9000/api/v1';
   final String authToken = 'my-static-token-123';
 
-  // Method untuk mengambil list buku (sudah ada)
-  Future<List<dynamic>> fetchBooks() async {
+  // Fetching books with pagination
+  Future<Map<String, dynamic>> fetchBooks({required int page}) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/books'),
+      Uri.parse('http://localhost:9000/api/v1/books?page=$page'),
       headers: {
         'Authorization': 'my-static-token-123',
         'Content-Type': 'application/json',
       },
     );
 
+    print('Response status code: ${response.statusCode}');
+    print('Response body: ${response.body}');
+
     if (response.statusCode == 200) {
-      final Map<String, dynamic> jsonData = json.decode(response.body);
-      if (jsonData.containsKey('data')) {
-        return jsonData['data'];
-      } else {
-        throw 'Invalid response structure: No "data" field found';
-      }
+      return json.decode(response.body);
     } else {
-      throw 'Failed to fetch books. Status code: ${response.statusCode}';
+      throw Exception('Failed to load books');
     }
   }
 
@@ -40,9 +38,9 @@ class ApiService {
     if (response.statusCode == 200) {
       // Parse JSON response
       final Map<String, dynamic> jsonData = json.decode(response.body);
-      
+
       if (jsonData.containsKey('data') && jsonData['data'] != null) {
-        return jsonData['data']; 
+        return jsonData['data'];
       } else {
         throw 'Invalid response structure: No "data" field found';
       }

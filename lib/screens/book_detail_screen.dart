@@ -65,9 +65,10 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
               },
             ),
             ElevatedButton(
+              child: const Text('Yes', style: TextStyle(color: Colors.white)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFdf3123),
-                shape: const RoundedRectangleBorder(
+                shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.zero,
                 ),
               ),
@@ -75,7 +76,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                 Navigator.of(context).pop();
                 _deleteBook();
               },
-              child: const Text('Yes', style: TextStyle(color: Colors.white)),
             ),
           ],
         );
@@ -103,6 +103,10 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         textColor: Colors.white,
       );
     }
+  }
+
+  Future<void> _goBackToAllBooks() async {
+    Navigator.pop(context, 'backToAllBooks');
   }
 
   @override
@@ -149,14 +153,28 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Year: ${bookDetails!['publishedYear']}',
+                    'Year: ${bookDetails!['year']}',
+                    style: const TextStyle(fontSize: 16, color: Colors.black54),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Description: ${bookDetails!['description']}',
+                    style: const TextStyle(fontSize: 16, color: Colors.black54),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Pages: ${bookDetails!['page']}',
+                    style: const TextStyle(fontSize: 16, color: Colors.black54),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Publisher: ${bookDetails!['publisher']}',
                     style: const TextStyle(fontSize: 16, color: Colors.black54),
                   ),
                   const SizedBox(height: 20),
                   const Divider(thickness: 1, color: Colors.black12),
                   const SizedBox(height: 20),
                   Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       ElevatedButton(
                         onPressed: () async {
@@ -169,53 +187,62 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                           );
                           if (result == true) {
                             _fetchBookDetails();
+                            Fluttertoast.showToast(
+                              msg: "Book updated successfully!",
+                              toastLength: Toast.LENGTH_SHORT,
+                              gravity: ToastGravity.TOP,
+                              backgroundColor: Colors.green,
+                              textColor: Colors.white,
+                            );
                           }
                         },
+                        child: const Text(
+                          'Edit Book',
+                          style: TextStyle(color: Colors.white),
+                        ),
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 15),
                           backgroundColor: const Color(0xFF024CAA),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
-                        ),
-                        child: const Text(
-                          'Edit Book',
-                          style: TextStyle(color: Colors.white),
+                          minimumSize: const Size.fromHeight(50),
                         ),
                       ),
                       const SizedBox(height: 10),
                       ElevatedButton(
                         onPressed: _showDeleteConfirmationDialog,
+                        child: const Text(
+                          'Delete Book',
+                          style: TextStyle(color: Colors.white),
+                        ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFdf3123),
                           padding: const EdgeInsets.symmetric(vertical: 15),
+                          backgroundColor: const Color(0xFFdf3123),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
                           minimumSize: const Size.fromHeight(50),
                         ),
-                        child: const Text('Delete Book',
-                            style: TextStyle(color: Colors.white)),
                       ),
                       const SizedBox(height: 10),
                       ElevatedButton(
-                        onPressed: () {
-                          Navigator.pop(context, 'goToAllBooks');
-                        },
+                        onPressed: _goBackToAllBooks,
+                        child: const Text(
+                          'Back to All Books',
+                          style: TextStyle(color: Colors.white),
+                        ),
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 15),
                           backgroundColor: const Color(0xFFEC8305),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
-                        ),
-                        child: const Text(
-                          'Back to All Books',
-                          style: TextStyle(color: Colors.white),
+                          minimumSize: const Size.fromHeight(50),
                         ),
                       ),
                     ],
-                  )
+                  ),
                 ],
               ),
             ),

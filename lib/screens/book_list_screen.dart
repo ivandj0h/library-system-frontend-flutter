@@ -14,32 +14,57 @@ class BookListScreen extends StatefulWidget {
 class _BookListScreenState extends State<BookListScreen>
     with SingleTickerProviderStateMixin {
   final ApiService apiService = ApiService();
-  List<dynamic> _filteredBooks = [];
+  List<dynamic> _books = [];
   final TextEditingController _searchController = TextEditingController();
   late TabController _tabController;
   bool _isLoading = true;
+  bool _isFetchingMore = false;
+  bool _hasMoreBooks = true;
+
+  // Pagination & ScrollController
+  ScrollController _scrollController = ScrollController();
+  int _currentPage = 1;
+  int _totalPages = 1;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(_handleTabChange);
-    _fetchAndSortBooks();
+    _fetchBooks(page: _currentPage);
+
     _searchController.addListener(_onSearchChanged);
+
+    // Listen for scrolling events for lazy loading
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels ==
+              _scrollController.position.maxScrollExtent &&
+          !_isFetchingMore &&
+          _hasMoreBooks) {
+        _fetchMoreBooks();
+      }
+    });
   }
 
-  Future<void> _fetchAndSortBooks() async {
+  Future<void> _fetchBooks({int page = 1}) async {
     setState(() {
       _isLoading = true;
     });
 
     try {
-      List<dynamic> fetchedBooks = await apiService.fetchBooks();
-      fetchedBooks
-          .sort((a, b) => b['publishedYear'].compareTo(a['publishedYear']));
+      final response = await apiService.fetchBooks(page: page);
+      List<dynamic> fetchedBooks = response['data']['books'];
+
       setState(() {
-        _filteredBooks = fetchedBooks;
+        _books = fetchedBooks;
+        _currentPage = int.tryParse(
+                response['data']['pagination']['currentPage'].toString()) ??
+            1;
+        _totalPages = int.tryParse(
+                response['data']['pagination']['totalPages'].toString()) ??
+            1;
         _isLoading = false;
+        _hasMoreBooks = _currentPage < _totalPages;
       });
     } catch (e) {
       Fluttertoast.showToast(
@@ -55,23 +80,58 @@ class _BookListScreenState extends State<BookListScreen>
     }
   }
 
+  Future<void> _fetchMoreBooks() async {
+    if (!_hasMoreBooks || _isFetchingMore) return; // Hindari pemanggilan ganda
+    setState(() {
+      _isFetchingMore = true;
+    });
+
+    try {
+      final response = await apiService.fetchBooks(page: _currentPage + 1);
+      List<dynamic> fetchedBooks = response['data']['books'];
+
+      setState(() {
+        _books.addAll(fetchedBooks);
+        _currentPage = int.tryParse(
+                response['data']['pagination']['currentPage'].toString()) ??
+            1;
+        _totalPages = int.tryParse(
+                response['data']['pagination']['totalPages'].toString()) ??
+            1;
+        _isFetchingMore = false;
+        _hasMoreBooks = _currentPage < _totalPages;
+      });
+    } catch (e) {
+      Fluttertoast.showToast(
+        msg: "Error fetching more books: $e",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.TOP,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+      setState(() {
+        _isFetchingMore = false;
+      });
+    }
+  }
+
   void _handleTabChange() {
     if (_tabController.index == 0) {
-      _fetchAndSortBooks();
+      _fetchBooks(page: 1);
     }
   }
 
   void _onSearchChanged() {
     setState(() {
-      _filteredBooks = _filterBooks(_searchController.text);
+      _books = _filterBooks(_searchController.text);
     });
   }
 
   List<dynamic> _filterBooks(String searchTerm) {
     if (searchTerm.isEmpty) {
-      return _filteredBooks;
+      return _books;
     }
-    return _filteredBooks
+    return _books
         .where((book) =>
             book['title'].toLowerCase().contains(searchTerm.toLowerCase()))
         .toList();
@@ -81,26 +141,27 @@ class _BookListScreenState extends State<BookListScreen>
   void dispose() {
     _tabController.dispose();
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F1F5),
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         title: const Row(
           children: [
-            Icon(Icons.book, color: Colors.black),
             SizedBox(width: 10),
             Text(
-              'LibraryApp',
+              'Home',
               style: TextStyle(
                 color: Colors.black,
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
+                textBaseline: TextBaseline.alphabetic,
               ),
             ),
           ],
@@ -159,11 +220,23 @@ class _BookListScreenState extends State<BookListScreen>
                     ),
                     Expanded(
                       child: RefreshIndicator(
-                        onRefresh: _fetchAndSortBooks,
+                        onRefresh: () => _fetchBooks(page: 1),
                         child: ListView.builder(
-                          itemCount: _filteredBooks.length,
+                          controller: _scrollController,
+                          itemCount: _books.length + 1, // Add one for loading
                           itemBuilder: (context, index) {
-                            final book = _filteredBooks[index];
+                            if (index == _books.length) {
+                              return _isFetchingMore
+                                  ? const Center(
+                                      child: Padding(
+                                        padding: EdgeInsets.all(16.0),
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                    )
+                                  : const SizedBox.shrink();
+                            }
+
+                            final book = _books[index];
                             return Padding(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 16.0, vertical: 8.0),
@@ -206,7 +279,7 @@ class _BookListScreenState extends State<BookListScreen>
                                             ),
                                             const SizedBox(height: 4),
                                             Text(
-                                              'Published Year: ${book['publishedYear'] ?? 'Unknown Year'}',
+                                              '${book['author'] ?? 'Unknown Author'}, ${book['year'] ?? 'Unknown Year'}',
                                               style: const TextStyle(
                                                   color: Colors.black54),
                                             ),
@@ -221,18 +294,16 @@ class _BookListScreenState extends State<BookListScreen>
                                           final result = await Navigator.push(
                                             context,
                                             MaterialPageRoute(
-                                              builder: (context) =>
-                                                  BookDetailScreen(
-                                                      bookId: book['id']),
-                                            ),
+                                                builder: (context) =>
+                                                    BookDetailScreen(
+                                                      bookId: book['id'],
+                                                    )),
                                           );
                                           if (result == 'deleted') {
-                                            _fetchAndSortBooks();
-                                          } else if (result == 'goToAllBooks') {
-                                            setState(() {
-                                              _isLoading = true;
-                                            });
-                                            await _fetchAndSortBooks();
+                                            _fetchBooks(page: _currentPage);
+                                          }
+                                          if (result == 'updated') {
+                                            _fetchBooks(page: _currentPage);
                                           }
                                         },
                                       ),
@@ -244,7 +315,7 @@ class _BookListScreenState extends State<BookListScreen>
                           },
                         ),
                       ),
-                    ),
+                    )
                   ],
                 ),
           AddBookScreen(tabController: _tabController),

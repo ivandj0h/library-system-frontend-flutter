@@ -11,81 +11,113 @@ class AddBookScreen extends StatefulWidget {
 }
 
 class _AddBookScreenState extends State<AddBookScreen> {
-  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _titleController = TextEditingController();
   final TextEditingController _authorController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _yearController = TextEditingController();
+  final TextEditingController _pageController = TextEditingController();
+  final TextEditingController _publisherController = TextEditingController();
   final ApiService apiService = ApiService();
+  bool isLoading = false;
+
   bool _isTitleEmpty = false;
   bool _isAuthorEmpty = false;
+  bool _isDescriptionEmpty = false;
   bool _isYearEmpty = false;
-  bool isLoading = false;
+  bool _isPageEmpty = false;
+  bool _isPublisherEmpty = false;
 
   Future<void> _addBook() async {
     setState(() {
-      _isTitleEmpty = _nameController.text.isEmpty;
+      _isTitleEmpty = _titleController.text.isEmpty;
       _isAuthorEmpty = _authorController.text.isEmpty;
+      _isDescriptionEmpty = _descriptionController.text.isEmpty;
       _isYearEmpty = _yearController.text.isEmpty;
+      _isPageEmpty = _pageController.text.isEmpty;
+      _isPublisherEmpty = _publisherController.text.isEmpty;
     });
 
-    if (!_isTitleEmpty && !_isAuthorEmpty && !_isYearEmpty) {
+    if (_isTitleEmpty ||
+        _isAuthorEmpty ||
+        _isDescriptionEmpty ||
+        _isYearEmpty ||
+        _isPageEmpty ||
+        _isPublisherEmpty) {
+      Fluttertoast.showToast(
+        msg: "All fields must be filled!",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.TOP,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    final newBook = {
+      'title': _titleController.text,
+      'author': _authorController.text,
+      'description': _descriptionController.text,
+      'year': int.tryParse(_yearController.text) ?? 0,
+      'page': int.tryParse(_pageController.text) ?? 0,
+      'publisher': _publisherController.text,
+    };
+
+    try {
+      await apiService.addBook(newBook);
+      Fluttertoast.showToast(
+        msg: "Book added successfully!",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.TOP,
+        backgroundColor: Colors.green,
+        textColor: Colors.white,
+      );
+
       setState(() {
-        isLoading = true;
+        isLoading = false;
       });
 
-      final newBook = {
-        'title': _nameController.text,
-        'author': _authorController.text,
-        'publishedYear': int.tryParse(_yearController.text) ?? 0,
-      };
+      _titleController.clear();
+      _authorController.clear();
+      _descriptionController.clear();
+      _yearController.clear();
+      _pageController.clear();
+      _publisherController.clear();
 
-      try {
-        await apiService.addBook(newBook);
-        await Future.delayed(const Duration(seconds: 2));
+      widget.tabController.animateTo(0);
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
 
-        setState(() {
-          isLoading = false;
-        });
-
-        // Tampilkan toaster sukses
-        Fluttertoast.showToast(
-          msg: "Book added successfully!",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.TOP,
-          backgroundColor: Colors.green,
-          textColor: Colors.white,
-        );
-
-        _nameController.clear();
-        _authorController.clear();
-        _yearController.clear();
-
-        widget.tabController.animateTo(0);
-      } catch (e) {
-        setState(() {
-          isLoading = false;
-        });
-
-        Fluttertoast.showToast(
-          msg: "Failed to add book: $e",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.TOP,
-          backgroundColor: Colors.red,
-          textColor: Colors.white,
-        );
-      }
+      Fluttertoast.showToast(
+        msg: "Failed to add book: $e",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.TOP,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text('Add Book'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+      ),
+      backgroundColor: Colors.white, // Set background putih
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             TextField(
-              controller: _nameController,
+              controller: _titleController,
               decoration: InputDecoration(
                 labelText: 'Title',
                 errorText: _isTitleEmpty ? 'Title cannot be empty' : null,
@@ -107,12 +139,48 @@ class _AddBookScreenState extends State<AddBookScreen> {
             ),
             const SizedBox(height: 10),
             TextField(
+              controller: _descriptionController,
+              decoration: InputDecoration(
+                labelText: 'Description',
+                errorText:
+                    _isDescriptionEmpty ? 'Description cannot be empty' : null,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            TextField(
               controller: _yearController,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
                 labelText: 'Published Year',
                 errorText:
                     _isYearEmpty ? 'Published Year cannot be empty' : null,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _pageController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: 'Pages',
+                errorText: _isPageEmpty ? 'Pages cannot be empty' : null,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _publisherController,
+              decoration: InputDecoration(
+                labelText: 'Publisher',
+                errorText:
+                    _isPublisherEmpty ? 'Publisher cannot be empty' : null,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -143,7 +211,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
                       'Add Book',
                       style: TextStyle(color: Colors.white),
                     ),
-            )
+            ),
           ],
         ),
       ),
