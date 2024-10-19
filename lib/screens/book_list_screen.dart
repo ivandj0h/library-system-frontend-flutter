@@ -91,11 +91,11 @@ class _BookListScreenState extends State<BookListScreen>
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: Row(
+        title: const Row(
           children: [
-            const Icon(Icons.book, color: Colors.black),
-            const SizedBox(width: 10),
-            const Text(
+            Icon(Icons.book, color: Colors.black),
+            SizedBox(width: 10),
+            Text(
               'LibraryApp',
               style: TextStyle(
                 color: Colors.black,

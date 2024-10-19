@@ -65,10 +65,9 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
               },
             ),
             ElevatedButton(
-              child: const Text('Yes', style: TextStyle(color: Colors.white)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFdf3123),
-                shape: RoundedRectangleBorder(
+                shape: const RoundedRectangleBorder(
                   borderRadius: BorderRadius.zero,
                 ),
               ),
@@ -76,6 +75,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                 Navigator.of(context).pop();
                 _deleteBook();
               },
+              child: const Text('Yes', style: TextStyle(color: Colors.white)),
             ),
           ],
         );
@@ -171,10 +171,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                             _fetchBookDetails();
                           }
                         },
-                        child: const Text(
-                          'Edit Book',
-                          style: TextStyle(color: Colors.white),
-                        ),
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 15),
                           backgroundColor: const Color(0xFF024CAA),
@@ -182,12 +178,14 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
+                        child: const Text(
+                          'Edit Book',
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
                       const SizedBox(height: 10),
                       ElevatedButton(
                         onPressed: _showDeleteConfirmationDialog,
-                        child: const Text('Delete Book',
-                            style: TextStyle(color: Colors.white)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFdf3123),
                           padding: const EdgeInsets.symmetric(vertical: 15),
@@ -196,22 +194,24 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                           ),
                           minimumSize: const Size.fromHeight(50),
                         ),
+                        child: const Text('Delete Book',
+                            style: TextStyle(color: Colors.white)),
                       ),
                       const SizedBox(height: 10),
                       ElevatedButton(
                         onPressed: () {
                           Navigator.pop(context, 'goToAllBooks');
                         },
-                        child: const Text(
-                          'Back to All Books',
-                          style: TextStyle(color: Colors.white),
-                        ),
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 15),
                           backgroundColor: const Color(0xFFEC8305),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
+                        ),
+                        child: const Text(
+                          'Back to All Books',
+                          style: TextStyle(color: Colors.white),
                         ),
                       ),
                     ],

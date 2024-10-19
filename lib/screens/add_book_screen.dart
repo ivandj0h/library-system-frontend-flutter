@@ -121,6 +121,15 @@ class _AddBookScreenState extends State<AddBookScreen> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: isLoading ? null : _addBook,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFDF3123),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                minimumSize: const Size.fromHeight(50),
+              ),
               child: isLoading
                   ? const SizedBox(
                       width: 20,
@@ -134,15 +143,6 @@ class _AddBookScreenState extends State<AddBookScreen> {
                       'Add Book',
                       style: TextStyle(color: Colors.white),
                     ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFDF3123),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                minimumSize: const Size.fromHeight(50),
-              ),
             )
           ],
         ),
