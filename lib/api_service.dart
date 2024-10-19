@@ -40,15 +40,13 @@ class ApiService {
     if (response.statusCode == 200) {
       // Parse JSON response
       final Map<String, dynamic> jsonData = json.decode(response.body);
-
-      // Cek apakah 'data' ada di dalam response
+      
       if (jsonData.containsKey('data') && jsonData['data'] != null) {
-        return jsonData['data']; // Return data jika ada
+        return jsonData['data']; 
       } else {
         throw 'Invalid response structure: No "data" field found';
       }
     } else {
-      // Jika status code bukan 200, lemparkan error dengan message dari server
       throw 'Failed to fetch book details: ${response.reasonPhrase}';
     }
   }

@@ -62,8 +62,7 @@ class _EditBookScreenState extends State<EditBookScreen> {
         backgroundColor: Colors.green,
         textColor: Colors.white,
       );
-
-      // Kembali ke BookDetailScreen dan kirimkan tanda bahwa update sukses
+      
       Navigator.pop(context, true);
     } catch (e) {
       // Tampilkan toaster error
@@ -115,14 +114,6 @@ class _EditBookScreenState extends State<EditBookScreen> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: isLoading ? null : _saveChanges,
-              child: isLoading
-                  ? const CircularProgressIndicator(
-                      color: Colors.white,
-                    )
-                  : const Text(
-                      'Save Changes',
-                      style: TextStyle(color: Colors.white),
-                    ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFDF3123),
                 padding:
@@ -132,6 +123,14 @@ class _EditBookScreenState extends State<EditBookScreen> {
                 ),
                 minimumSize: const Size.fromHeight(50),
               ),
+              child: isLoading
+                  ? const CircularProgressIndicator(
+                      color: Colors.white,
+                    )
+                  : const Text(
+                      'Save Changes',
+                      style: TextStyle(color: Colors.white),
+                    ),
             ),
           ],
         ),
