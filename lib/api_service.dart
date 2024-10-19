@@ -10,29 +10,59 @@ class ApiService {
     final response = await http.get(
       Uri.parse('$baseUrl/books'),
       headers: {
-        'Authorization': authToken,
+        'Authorization': 'my-static-token-123',
         'Content-Type': 'application/json',
       },
     );
 
     if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      return data['data'] as List<dynamic>;
+      final Map<String, dynamic> jsonData = json.decode(response.body);
+      if (jsonData.containsKey('data')) {
+        return jsonData['data'];
+      } else {
+        throw 'Invalid response structure: No "data" field found';
+      }
     } else {
-      throw Exception('Failed to load books');
+      throw 'Failed to fetch books. Status code: ${response.statusCode}';
+    }
+  }
+
+  // Method get book by Id
+  Future<Map<String, dynamic>> getBookById(String bookId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/books/$bookId'),
+      headers: {
+        'Authorization': 'my-static-token-123',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      // Parse JSON response
+      final Map<String, dynamic> jsonData = json.decode(response.body);
+
+      // Cek apakah 'data' ada di dalam response
+      if (jsonData.containsKey('data') && jsonData['data'] != null) {
+        return jsonData['data']; // Return data jika ada
+      } else {
+        throw 'Invalid response structure: No "data" field found';
+      }
+    } else {
+      // Jika status code bukan 200, lemparkan error dengan message dari server
+      throw 'Failed to fetch book details: ${response.reasonPhrase}';
     }
   }
 
   // Method baru untuk mengupdate buku
   Future<void> updateBook(
-      String bookId, Map<String, dynamic> updatedData) async {
+      String id, Map<String, dynamic> updatedBookData) async {
     final response = await http.put(
-      Uri.parse('$baseUrl/books/$bookId'),
+      Uri.parse('$baseUrl/books/$id'),
       headers: {
-        'Authorization': authToken,
+        'Authorization': 'my-static-token-123',
         'Content-Type': 'application/json',
       },
-      body: json.encode(updatedData),
+      body: json.encode(updatedBookData),
     );
 
     if (response.statusCode != 200) {
