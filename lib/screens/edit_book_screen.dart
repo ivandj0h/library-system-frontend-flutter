@@ -4,12 +4,12 @@ import 'package:fluttertoast/fluttertoast.dart';
 
 class EditBookScreen extends StatefulWidget {
   final Map<String, dynamic> book;
-  final TabController tabController;
+  // final TabController tabController;
 
   const EditBookScreen({
     super.key,
     required this.book,
-    required this.tabController,
+    // required this.tabController,
   });
 
   @override
@@ -53,9 +53,20 @@ class _EditBookScreenState extends State<EditBookScreen> {
 
     try {
       await apiService.updateBook(widget.book['id'], updatedBook);
-      widget.tabController.animateTo(0);
-      Navigator.pop(context, 'updated');
+
+      // Tampilkan toaster sukses
+      Fluttertoast.showToast(
+        msg: "Book updated successfully",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.TOP,
+        backgroundColor: Colors.green,
+        textColor: Colors.white,
+      );
+
+      // Kembali ke BookDetailScreen dan kirimkan tanda bahwa update sukses
+      Navigator.pop(context, true);
     } catch (e) {
+      // Tampilkan toaster error
       Fluttertoast.showToast(
         msg: "Failed to update book: $e",
         toastLength: Toast.LENGTH_SHORT,

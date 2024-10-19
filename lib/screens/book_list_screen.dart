@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import '../api_service.dart';
 import 'add_book_screen.dart';
 import 'book_detail_screen.dart';
@@ -13,7 +14,6 @@ class BookListScreen extends StatefulWidget {
 class _BookListScreenState extends State<BookListScreen>
     with SingleTickerProviderStateMixin {
   final ApiService apiService = ApiService();
-  late Future<List<dynamic>> books;
   List<dynamic> _filteredBooks = [];
   final TextEditingController _searchController = TextEditingController();
   late TabController _tabController;
@@ -33,23 +33,22 @@ class _BookListScreenState extends State<BookListScreen>
       _isLoading = true;
     });
 
-    await Future.delayed(const Duration(seconds: 1));
-
     try {
       List<dynamic> fetchedBooks = await apiService.fetchBooks();
       fetchedBooks
           .sort((a, b) => b['publishedYear'].compareTo(a['publishedYear']));
       setState(() {
         _filteredBooks = fetchedBooks;
+        _isLoading = false;
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error fetching books: $e'),
-          backgroundColor: Colors.red,
-        ),
+      Fluttertoast.showToast(
+        msg: "Error fetching books: $e",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.TOP,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
       );
-    } finally {
       setState(() {
         _isLoading = false;
       });
@@ -96,6 +95,14 @@ class _BookListScreenState extends State<BookListScreen>
           children: [
             const Icon(Icons.book, color: Colors.black),
             const SizedBox(width: 10),
+            const Text(
+              'LibraryApp',
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
           ],
         ),
         bottom: TabBar(
@@ -214,16 +221,20 @@ class _BookListScreenState extends State<BookListScreen>
                                           final result = await Navigator.push(
                                             context,
                                             MaterialPageRoute(
-                                                builder: (context) =>
-                                                    BookDetailScreen(
-                                                      bookId: book['id'],
-                                                    )),
+                                              builder: (context) =>
+                                                  BookDetailScreen(
+                                                      bookId: book['id']),
+                                            ),
                                           );
                                           if (result == 'deleted') {
-                                            _fetchAndSortBooks();
-                                          }
-                                          if (result == 'updated') {
-                                            _fetchAndSortBooks();
+                                            _fetchAndSortBooks(); // Panggil ulang API jika buku dihapus
+                                          } else if (result == 'goToAllBooks') {
+                                            // Tampilkan spinner lalu fetch ulang data
+                                            setState(() {
+                                              _isLoading =
+                                                  true; // Tampilkan spinner
+                                            });
+                                            await _fetchAndSortBooks(); // Panggil ulang data
                                           }
                                         },
                                       ),
@@ -238,7 +249,7 @@ class _BookListScreenState extends State<BookListScreen>
                     ),
                   ],
                 ),
-          AddBookScreen(tabController: _tabController), // Pass TabController
+          AddBookScreen(tabController: _tabController),
         ],
       ),
     );
