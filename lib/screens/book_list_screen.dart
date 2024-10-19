@@ -10,14 +10,36 @@ class BookListScreen extends StatefulWidget {
   _BookListScreenState createState() => _BookListScreenState();
 }
 
-class _BookListScreenState extends State<BookListScreen> {
-  ApiService apiService = ApiService();
+class _BookListScreenState extends State<BookListScreen>
+    with TickerProviderStateMixin {
+  final ApiService apiService = ApiService();
   late Future<List<dynamic>> books;
+  List<dynamic> _filteredBooks = [];
+  final TextEditingController _searchController = TextEditingController();
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
     books = apiService.fetchBooks();
+    _searchController.addListener(_onSearchChanged);
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  void _onSearchChanged() {
+    setState(() {
+      _filteredBooks = _filterBooks(_searchController.text);
+    });
+  }
+
+  List<dynamic> _filterBooks(String searchTerm) {
+    if (searchTerm.isEmpty) {
+      return _filteredBooks;
+    }
+    return _filteredBooks
+        .where((book) =>
+            book['name'].toLowerCase().contains(searchTerm.toLowerCase()))
+        .toList();
   }
 
   Future<void> _refreshBooks() async {
@@ -29,148 +51,324 @@ class _BookListScreenState extends State<BookListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFDBD3D3),
       appBar: AppBar(
-        title: const Text('Library Books'),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: Row(
+          children: [
+            Icon(Icons.book, color: Colors.black), // Icon Buku di Kiri
+            const SizedBox(width: 10),
+          ],
+        ),
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: const Color(0xFFEC8305),
+          labelColor: const Color(0xFFEC8305),
+          unselectedLabelColor: Colors.grey,
+          labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+          tabs: const [
+            Tab(text: 'ALL BOOKS'),
+            Tab(text: 'NEW BOOK'),
+          ],
+        ),
       ),
-      body: Column(
+      body: TabBarView(
+        controller: _tabController,
         children: [
-          Expanded(
-            child: FutureBuilder<List<dynamic>>(
-              future: books,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                } else {
-                  final List<dynamic> bookList = snapshot.data ?? [];
-                  return RefreshIndicator(
-                    onRefresh: _refreshBooks,
-                    child: ListView.builder(
-                      itemCount: bookList.length,
-                      itemBuilder: (context, index) {
-                        final book = bookList[index];
-                        return Card(
-                          margin: const EdgeInsets.symmetric(
-                            vertical: 10,
-                            horizontal: 15,
-                          ),
-                          child: ListTile(
-                            leading: Container(
-                              width: 50,
-                              height: 50,
-                              color: Colors.grey[300],
-                              child: const Center(
-                                child: Text(
-                                  'No Image',
-                                  style: TextStyle(fontSize: 12),
-                                ),
-                              ),
-                            ),
-                            title: Text(
-                              book['name'],
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Author: ${book['author']}'),
-                                Text(
-                                    'Published Year: ${book['publishedYear']}'),
-                              ],
-                            ),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () async {
-                                try {
-                                  await apiService.deleteBook(book['id']);
-                                  _refreshBooks(); // Refresh setelah menghapus
-                                } catch (e) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                        content:
-                                            Text('Failed to delete book: $e')),
-                                  );
-                                }
-                              },
-                            ),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      BookDetailScreen(book: book),
-                                ),
-                              );
-                            },
-                          ),
-                        );
-                      },
+          Column(
+            children: [
+              const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    labelText: 'Search by Book Name',
+                    labelStyle: const TextStyle(color: Colors.black),
+                    prefixIcon: const Icon(Icons.search, color: Colors.black),
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
                     ),
-                  );
-                }
-              },
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(
-                left: 16.0,
-                right: 16.0,
-                bottom: 30.0), // Jarak dari bagian bawah
-            child: ElevatedButton(
-              onPressed: () async {
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const AddBookScreen()),
-                );
-                if (result == true) {
-                  _refreshBooks(); // Refresh setelah menambahkan buku baru
-                }
-              },
-              child: const Text('Add New Book',
-                  style: TextStyle(color: Colors.white)), // Text putih
-              style: ElevatedButton.styleFrom(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                backgroundColor: Colors.black,
-                disabledForegroundColor: Colors.grey[700]?.withOpacity(0.38),
-                disabledBackgroundColor: Colors.grey[700]
-                    ?.withOpacity(0.12), // Warna background hitam
-                shape: RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.circular(8), // Radius tidak terlalu banyak
+                  ),
+                  style: const TextStyle(color: Colors.black),
                 ),
-                shadowColor: Colors.grey,
-                elevation: 4,
-                minimumSize:
-                    const Size.fromHeight(50), // Minimal height untuk tombol
-              ).copyWith(
-                elevation: MaterialStateProperty.resolveWith<double>(
-                  (Set<MaterialState> states) {
-                    if (states.contains(MaterialState.hovered)) {
-                      return 6; // Efek hover
+              ),
+              const SizedBox(height: 10),
+              Expanded(
+                child: FutureBuilder<List<dynamic>>(
+                  future: books,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      return Center(
+                          child: Text('Error: ${snapshot.error}',
+                              style: const TextStyle(color: Colors.black)));
+                    } else {
+                      _filteredBooks = snapshot.data ?? [];
+                      final List<dynamic> displayedBooks =
+                          _filterBooks(_searchController.text);
+                      return RefreshIndicator(
+                        onRefresh: _refreshBooks,
+                        child: ListView.builder(
+                          itemCount: displayedBooks.length,
+                          itemBuilder: (context, index) {
+                            final book = displayedBooks[index];
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0,
+                                  vertical: 4.0), // Mengurangi jarak antar card
+                              child: Card(
+                                color: const Color(0xFFFFFFFF),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                      8), // Mengurangi border radius
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 50,
+                                        height: 50,
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFEFF3F7),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                        child: const Center(
+                                          child: Icon(Icons.book,
+                                              color: Colors.grey),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              book['name'],
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              'Author: ${book['author']}',
+                                              style: const TextStyle(
+                                                  color: Colors.black54),
+                                            ),
+                                            Text(
+                                              'Published Year: ${book['publishedYear']}',
+                                              style: const TextStyle(
+                                                  color: Colors.black54),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(
+                                            Icons.arrow_forward_ios,
+                                            color: Color(0xFFEC8305)),
+                                        onPressed: () async {
+                                          final result = await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  BookDetailScreen(book: book),
+                                            ),
+                                          );
+                                          if (result == 'deleted') {
+                                            _refreshBooks();
+                                          }
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      );
                     }
-                    return 4; // Normal elevation
-                  },
-                ),
-                backgroundColor: MaterialStateProperty.resolveWith<Color>(
-                  (Set<MaterialState> states) {
-                    if (states.contains(MaterialState.hovered)) {
-                      return Colors
-                          .grey[800]!; // Warna saat hover (hitam agak muda)
-                    }
-                    return Colors.black; // Warna normal
                   },
                 ),
               ),
-            ),
+            ],
           ),
+          const AddBookScreen(), // Tampilan untuk menambahkan buku baru
         ],
       ),
     );
   }
+
+  // @override
+  // Widget build(BuildContext context) {
+  //   return Scaffold(
+  //     backgroundColor: const Color(0xFFDBD3D3),
+  //     appBar: AppBar(
+  //       backgroundColor: Colors.white,
+  //       elevation: 0,
+  //       title: Row(
+  //         children: [
+  //           Icon(Icons.book, color: Colors.black), // Icon Buku di Kiri
+  //           const SizedBox(width: 10),
+  //         ],
+  //       ),
+  //       bottom: TabBar(
+  //         controller: _tabController,
+  //         indicatorColor: const Color(0xFFEC8305),
+  //         labelColor: const Color(0xFFEC8305),
+  //         unselectedLabelColor: Colors.grey,
+  //         labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+  //         tabs: const [
+  //           Tab(text: 'ALL BOOKS'),
+  //           Tab(text: 'NEW BOOK'),
+  //         ],
+  //       ),
+  //     ),
+  //     body: TabBarView(
+  //       controller: _tabController,
+  //       children: [
+  //         Column(
+  //           children: [
+  //             const SizedBox(height: 20),
+  //             Padding(
+  //               padding: const EdgeInsets.symmetric(horizontal: 16.0),
+  //               child: TextField(
+  //                 controller: _searchController,
+  //                 decoration: InputDecoration(
+  //                   labelText: 'Search by Book Name',
+  //                   labelStyle: const TextStyle(color: Colors.black),
+  //                   prefixIcon: const Icon(Icons.search, color: Colors.black),
+  //                   filled: true,
+  //                   fillColor: Colors.white,
+  //                   border: OutlineInputBorder(
+  //                     borderRadius: BorderRadius.circular(8),
+  //                     borderSide: BorderSide.none,
+  //                   ),
+  //                 ),
+  //                 style: const TextStyle(color: Colors.black),
+  //               ),
+  //             ),
+  //             const SizedBox(height: 10),
+  //             Expanded(
+  //               child: FutureBuilder<List<dynamic>>(
+  //                 future: books,
+  //                 builder: (context, snapshot) {
+  //                   if (snapshot.connectionState == ConnectionState.waiting) {
+  //                     return const Center(child: CircularProgressIndicator());
+  //                   } else if (snapshot.hasError) {
+  //                     return Center(
+  //                         child: Text('Error: ${snapshot.error}',
+  //                             style: const TextStyle(color: Colors.black)));
+  //                   } else {
+  //                     _filteredBooks = snapshot.data ?? [];
+  //                     final List<dynamic> displayedBooks =
+  //                         _filterBooks(_searchController.text);
+  //                     return RefreshIndicator(
+  //                       onRefresh: _refreshBooks,
+  //                       child: ListView.builder(
+  //                         itemCount: displayedBooks.length,
+  //                         itemBuilder: (context, index) {
+  //                           final book = displayedBooks[index];
+  //                           return Padding(
+  //                             padding: const EdgeInsets.symmetric(
+  //                                 horizontal: 16.0,
+  //                                 vertical: 4.0), // Mengurangi jarak antar card
+  //                             child: Card(
+  //                               color: const Color(0xFFFFFFFF),
+  //                               shape: RoundedRectangleBorder(
+  //                                 borderRadius: BorderRadius.circular(
+  //                                     8), // Mengurangi border radius
+  //                               ),
+  //                               child: Padding(
+  //                                 padding: const EdgeInsets.all(16.0),
+  //                                 child: Row(
+  //                                   children: [
+  //                                     Container(
+  //                                       width: 50,
+  //                                       height: 50,
+  //                                       decoration: BoxDecoration(
+  //                                         color: const Color(0xFFEFF3F7),
+  //                                         borderRadius:
+  //                                             BorderRadius.circular(8),
+  //                                       ),
+  //                                       child: const Center(
+  //                                         child: Icon(Icons.book,
+  //                                             color: Colors.grey),
+  //                                       ),
+  //                                     ),
+  //                                     const SizedBox(width: 16),
+  //                                     Expanded(
+  //                                       child: Column(
+  //                                         crossAxisAlignment:
+  //                                             CrossAxisAlignment.start,
+  //                                         children: [
+  //                                           Text(
+  //                                             book['name'],
+  //                                             style: const TextStyle(
+  //                                               fontWeight: FontWeight.bold,
+  //                                               fontSize: 16,
+  //                                               color: Colors.black,
+  //                                             ),
+  //                                           ),
+  //                                           const SizedBox(height: 4),
+  //                                           Text(
+  //                                             'Author: ${book['author']}',
+  //                                             style: const TextStyle(
+  //                                                 color: Colors.black54),
+  //                                           ),
+  //                                           Text(
+  //                                             'Published Year: ${book['publishedYear']}',
+  //                                             style: const TextStyle(
+  //                                                 color: Colors.black54),
+  //                                           ),
+  //                                         ],
+  //                                       ),
+  //                                     ),
+  //                                     IconButton(
+  //                                       icon: const Icon(
+  //                                           Icons.arrow_forward_ios,
+  //                                           color: Color(0xFFEC8305)),
+  //                                       onPressed: () async {
+  //                                         final result = await Navigator.push(
+  //                                           context,
+  //                                           MaterialPageRoute(
+  //                                             builder: (context) =>
+  //                                                 BookDetailScreen(book: book),
+  //                                           ),
+  //                                         );
+  //                                         if (result == 'deleted') {
+  //                                           _refreshBooks();
+  //                                         }
+  //                                       },
+  //                                     ),
+  //                                   ],
+  //                                 ),
+  //                               ),
+  //                             ),
+  //                           );
+  //                         },
+  //                       ),
+  //                     );
+  //                   }
+  //                 },
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //         const AddBookScreen(),
+  //       ],
+  //     ),
+  //   );
+  // }
 }
