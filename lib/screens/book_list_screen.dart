@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart'; // Import Fluttertoast
 import '../api_service.dart';
 import 'add_book_screen.dart';
 import 'book_detail_screen.dart';
@@ -18,15 +17,14 @@ class _BookListScreenState extends State<BookListScreen>
   List<dynamic> _filteredBooks = [];
   final TextEditingController _searchController = TextEditingController();
   late TabController _tabController;
-
-  bool _isLoading = true; // Spinner control
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(_handleTabChange);
-    _fetchAndSortBooks(); // Fetch books at the start with delay
+    _fetchAndSortBooks();
     _searchController.addListener(_onSearchChanged);
   }
 
@@ -41,17 +39,15 @@ class _BookListScreenState extends State<BookListScreen>
       List<dynamic> fetchedBooks = await apiService.fetchBooks();
       fetchedBooks
           .sort((a, b) => b['publishedYear'].compareTo(a['publishedYear']));
-
       setState(() {
         _filteredBooks = fetchedBooks;
       });
     } catch (e) {
-      Fluttertoast.showToast(
-        msg: "Error fetching books: $e",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.TOP,
-        backgroundColor: Colors.red,
-        textColor: Colors.white,
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error fetching books: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
     } finally {
       setState(() {
@@ -62,7 +58,7 @@ class _BookListScreenState extends State<BookListScreen>
 
   void _handleTabChange() {
     if (_tabController.index == 0) {
-      _fetchAndSortBooks(); // Fetch data again when "ALL BOOKS" tab is clicked
+      _fetchAndSortBooks();
     }
   }
 
@@ -78,7 +74,7 @@ class _BookListScreenState extends State<BookListScreen>
     }
     return _filteredBooks
         .where((book) =>
-            book['name'].toLowerCase().contains(searchTerm.toLowerCase()))
+            book['title'].toLowerCase().contains(searchTerm.toLowerCase()))
         .toList();
   }
 
@@ -92,14 +88,13 @@ class _BookListScreenState extends State<BookListScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:
-          const Color(0xFFF0F1F5), // Ubah background menjadi #f0f1f5
+      backgroundColor: const Color(0xFFF0F1F5),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         title: Row(
           children: [
-            Icon(Icons.book, color: Colors.black), // Icon Buku di Kiri
+            const Icon(Icons.book, color: Colors.black),
             const SizedBox(width: 10),
           ],
         ),
@@ -128,7 +123,7 @@ class _BookListScreenState extends State<BookListScreen>
                       child: TextField(
                         controller: _searchController,
                         decoration: InputDecoration(
-                          labelText: 'Search by Book Name',
+                          labelText: 'Search by Book Title',
                           labelStyle: const TextStyle(color: Colors.black),
                           prefixIcon:
                               const Icon(Icons.search, color: Colors.black),
@@ -136,15 +131,13 @@ class _BookListScreenState extends State<BookListScreen>
                           fillColor: Colors.white,
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(
-                                color:
-                                    Color(0xFFDDDDDD)), // Border color #dddddd
+                            borderSide:
+                                const BorderSide(color: Color(0xFFDDDDDD)),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(
-                                color:
-                                    Color(0xFFDDDDDD)), // Border color #dddddd
+                            borderSide:
+                                const BorderSide(color: Color(0xFFDDDDDD)),
                           ),
                         ),
                         style: const TextStyle(color: Colors.black),
@@ -156,7 +149,7 @@ class _BookListScreenState extends State<BookListScreen>
                       color: Colors.black12,
                       indent: 16,
                       endIndent: 16,
-                    ), // Garis pemisah
+                    ),
                     Expanded(
                       child: RefreshIndicator(
                         onRefresh: _fetchAndSortBooks,
@@ -168,7 +161,7 @@ class _BookListScreenState extends State<BookListScreen>
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 16.0, vertical: 8.0),
                               child: Card(
-                                elevation: 2, // Shadow tipis
+                                elevation: 2,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
@@ -196,7 +189,8 @@ class _BookListScreenState extends State<BookListScreen>
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              book['name'],
+                                              book['title'] ??
+                                                  'No Title Available',
                                               style: const TextStyle(
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: 16,
@@ -205,7 +199,7 @@ class _BookListScreenState extends State<BookListScreen>
                                             ),
                                             const SizedBox(height: 4),
                                             Text(
-                                              'Published Year: ${book['publishedYear']}',
+                                              'Published Year: ${book['publishedYear'] ?? 'Unknown Year'}',
                                               style: const TextStyle(
                                                   color: Colors.black54),
                                             ),
@@ -220,9 +214,10 @@ class _BookListScreenState extends State<BookListScreen>
                                           final result = await Navigator.push(
                                             context,
                                             MaterialPageRoute(
-                                              builder: (context) =>
-                                                  BookDetailScreen(book: book),
-                                            ),
+                                                builder: (context) =>
+                                                    BookDetailScreen(
+                                                      bookId: book['id'],
+                                                    )),
                                           );
                                           if (result == 'deleted') {
                                             _fetchAndSortBooks();
@@ -243,7 +238,7 @@ class _BookListScreenState extends State<BookListScreen>
                     ),
                   ],
                 ),
-          const AddBookScreen(),
+          AddBookScreen(tabController: _tabController), // Pass TabController
         ],
       ),
     );

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../api_service.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class AddBookScreen extends StatefulWidget {
-  const AddBookScreen({super.key});
+  final TabController tabController;
+  const AddBookScreen({super.key, required this.tabController});
 
   @override
   _AddBookScreenState createState() => _AddBookScreenState();
@@ -13,25 +15,25 @@ class _AddBookScreenState extends State<AddBookScreen> {
   final TextEditingController _authorController = TextEditingController();
   final TextEditingController _yearController = TextEditingController();
   final ApiService apiService = ApiService();
-  bool _isNameEmpty = false;
+  bool _isTitleEmpty = false;
   bool _isAuthorEmpty = false;
   bool _isYearEmpty = false;
   bool isLoading = false;
 
   Future<void> _addBook() async {
     setState(() {
-      _isNameEmpty = _nameController.text.isEmpty;
+      _isTitleEmpty = _nameController.text.isEmpty;
       _isAuthorEmpty = _authorController.text.isEmpty;
       _isYearEmpty = _yearController.text.isEmpty;
     });
 
-    if (!_isNameEmpty && !_isAuthorEmpty && !_isYearEmpty) {
+    if (!_isTitleEmpty && !_isAuthorEmpty && !_isYearEmpty) {
       setState(() {
         isLoading = true;
       });
 
       final newBook = {
-        'name': _nameController.text,
+        'title': _nameController.text,
         'author': _authorController.text,
         'publishedYear': int.tryParse(_yearController.text) ?? 0,
       };
@@ -44,28 +46,31 @@ class _AddBookScreenState extends State<AddBookScreen> {
           isLoading = false;
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Book added successfully!'),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: Colors.green,
-          ),
+        // Tampilkan toaster sukses
+        Fluttertoast.showToast(
+          msg: "Book added successfully!",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.TOP,
+          backgroundColor: Colors.green,
+          textColor: Colors.white,
         );
 
-        // Mengosongkan form
         _nameController.clear();
         _authorController.clear();
         _yearController.clear();
+
+        widget.tabController.animateTo(0);
       } catch (e) {
         setState(() {
           isLoading = false;
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to add book: $e'),
-            backgroundColor: Colors.red,
-          ),
+        Fluttertoast.showToast(
+          msg: "Failed to add book: $e",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.TOP,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
         );
       }
     }
@@ -83,7 +88,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
               controller: _nameController,
               decoration: InputDecoration(
                 labelText: 'Title',
-                errorText: _isNameEmpty ? 'Title cannot be empty' : null,
+                errorText: _isTitleEmpty ? 'Title cannot be empty' : null,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),

@@ -4,8 +4,13 @@ import 'package:fluttertoast/fluttertoast.dart';
 
 class EditBookScreen extends StatefulWidget {
   final Map<String, dynamic> book;
+  final TabController tabController;
 
-  const EditBookScreen({super.key, required this.book});
+  const EditBookScreen({
+    super.key,
+    required this.book,
+    required this.tabController,
+  });
 
   @override
   _EditBookScreenState createState() => _EditBookScreenState();
@@ -13,7 +18,7 @@ class EditBookScreen extends StatefulWidget {
 
 class _EditBookScreenState extends State<EditBookScreen> {
   final ApiService apiService = ApiService();
-  late TextEditingController _nameController;
+  late TextEditingController _titleController;
   late TextEditingController _authorController;
   late TextEditingController _publishedYearController;
   bool isLoading = false;
@@ -21,7 +26,7 @@ class _EditBookScreenState extends State<EditBookScreen> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.book['name']);
+    _titleController = TextEditingController(text: widget.book['title']);
     _authorController = TextEditingController(text: widget.book['author']);
     _publishedYearController =
         TextEditingController(text: widget.book['publishedYear'].toString());
@@ -29,7 +34,7 @@ class _EditBookScreenState extends State<EditBookScreen> {
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _titleController.dispose();
     _authorController.dispose();
     _publishedYearController.dispose();
     super.dispose();
@@ -41,25 +46,22 @@ class _EditBookScreenState extends State<EditBookScreen> {
     });
 
     final updatedBook = {
-      'name': _nameController.text,
+      'title': _titleController.text,
       'author': _authorController.text,
       'publishedYear': int.tryParse(_publishedYearController.text) ?? 0,
     };
 
     try {
       await apiService.updateBook(widget.book['id'], updatedBook);
-      Fluttertoast.showToast(
-        msg: "Book updated successfully",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.TOP,
-        backgroundColor: Colors.green,
-        textColor: Colors.white,
-      );
-
+      widget.tabController.animateTo(0);
       Navigator.pop(context, 'updated');
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to update book: $e')),
+      Fluttertoast.showToast(
+        msg: "Failed to update book: $e",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.TOP,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
       );
     } finally {
       setState(() {
@@ -79,7 +81,7 @@ class _EditBookScreenState extends State<EditBookScreen> {
         child: Column(
           children: [
             TextField(
-              controller: _nameController,
+              controller: _titleController,
               decoration: const InputDecoration(
                 labelText: 'Title',
               ),
