@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart'; // Import Fluttertoast
 import '../api_service.dart';
 import 'add_book_screen.dart';
 import 'book_detail_screen.dart';
@@ -11,19 +12,58 @@ class BookListScreen extends StatefulWidget {
 }
 
 class _BookListScreenState extends State<BookListScreen>
-    with TickerProviderStateMixin {
+    with SingleTickerProviderStateMixin {
   final ApiService apiService = ApiService();
   late Future<List<dynamic>> books;
   List<dynamic> _filteredBooks = [];
   final TextEditingController _searchController = TextEditingController();
   late TabController _tabController;
 
+  bool _isLoading = true; // Spinner control
+
   @override
   void initState() {
     super.initState();
-    books = apiService.fetchBooks();
-    _searchController.addListener(_onSearchChanged);
     _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(_handleTabChange);
+    _fetchAndSortBooks(); // Fetch books at the start with delay
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  Future<void> _fetchAndSortBooks() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    await Future.delayed(const Duration(seconds: 1));
+
+    try {
+      List<dynamic> fetchedBooks = await apiService.fetchBooks();
+      fetchedBooks
+          .sort((a, b) => b['publishedYear'].compareTo(a['publishedYear']));
+
+      setState(() {
+        _filteredBooks = fetchedBooks;
+      });
+    } catch (e) {
+      Fluttertoast.showToast(
+        msg: "Error fetching books: $e",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.TOP,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _handleTabChange() {
+    if (_tabController.index == 0) {
+      _fetchAndSortBooks(); // Fetch data again when "ALL BOOKS" tab is clicked
+    }
   }
 
   void _onSearchChanged() {
@@ -42,16 +82,18 @@ class _BookListScreenState extends State<BookListScreen>
         .toList();
   }
 
-  Future<void> _refreshBooks() async {
-    setState(() {
-      books = apiService.fetchBooks();
-    });
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFDBD3D3),
+      backgroundColor:
+          const Color(0xFFF0F1F5), // Ubah background menjadi #f0f1f5
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -76,57 +118,59 @@ class _BookListScreenState extends State<BookListScreen>
       body: TabBarView(
         controller: _tabController,
         children: [
-          Column(
-            children: [
-              const SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    labelText: 'Search by Book Name',
-                    labelStyle: const TextStyle(color: Colors.black),
-                    prefixIcon: const Icon(Icons.search, color: Colors.black),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none,
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : Column(
+                  children: [
+                    const SizedBox(height: 20),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          labelText: 'Search by Book Name',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          prefixIcon:
+                              const Icon(Icons.search, color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(
+                                color:
+                                    Color(0xFFDDDDDD)), // Border color #dddddd
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(
+                                color:
+                                    Color(0xFFDDDDDD)), // Border color #dddddd
+                          ),
+                        ),
+                        style: const TextStyle(color: Colors.black),
+                      ),
                     ),
-                  ),
-                  style: const TextStyle(color: Colors.black),
-                ),
-              ),
-              const SizedBox(height: 10),
-              Expanded(
-                child: FutureBuilder<List<dynamic>>(
-                  future: books,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (snapshot.hasError) {
-                      return Center(
-                          child: Text('Error: ${snapshot.error}',
-                              style: const TextStyle(color: Colors.black)));
-                    } else {
-                      _filteredBooks = snapshot.data ?? [];
-                      final List<dynamic> displayedBooks =
-                          _filterBooks(_searchController.text);
-                      return RefreshIndicator(
-                        onRefresh: _refreshBooks,
+                    const SizedBox(height: 10),
+                    const Divider(
+                      thickness: 1,
+                      color: Colors.black12,
+                      indent: 16,
+                      endIndent: 16,
+                    ), // Garis pemisah
+                    Expanded(
+                      child: RefreshIndicator(
+                        onRefresh: _fetchAndSortBooks,
                         child: ListView.builder(
-                          itemCount: displayedBooks.length,
+                          itemCount: _filteredBooks.length,
                           itemBuilder: (context, index) {
-                            final book = displayedBooks[index];
+                            final book = _filteredBooks[index];
                             return Padding(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 16.0,
-                                  vertical: 4.0), // Mengurangi jarak antar card
+                                  horizontal: 16.0, vertical: 8.0),
                               child: Card(
-                                color: const Color(0xFFFFFFFF),
+                                elevation: 2, // Shadow tipis
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                      8), // Mengurangi border radius
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Padding(
                                   padding: const EdgeInsets.all(16.0),
@@ -161,11 +205,6 @@ class _BookListScreenState extends State<BookListScreen>
                                             ),
                                             const SizedBox(height: 4),
                                             Text(
-                                              'Author: ${book['author']}',
-                                              style: const TextStyle(
-                                                  color: Colors.black54),
-                                            ),
-                                            Text(
                                               'Published Year: ${book['publishedYear']}',
                                               style: const TextStyle(
                                                   color: Colors.black54),
@@ -186,7 +225,10 @@ class _BookListScreenState extends State<BookListScreen>
                                             ),
                                           );
                                           if (result == 'deleted') {
-                                            _refreshBooks();
+                                            _fetchAndSortBooks();
+                                          }
+                                          if (result == 'updated') {
+                                            _fetchAndSortBooks();
                                           }
                                         },
                                       ),
@@ -197,178 +239,13 @@ class _BookListScreenState extends State<BookListScreen>
                             );
                           },
                         ),
-                      );
-                    }
-                  },
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
-          const AddBookScreen(), // Tampilan untuk menambahkan buku baru
+          const AddBookScreen(),
         ],
       ),
     );
   }
-
-  // @override
-  // Widget build(BuildContext context) {
-  //   return Scaffold(
-  //     backgroundColor: const Color(0xFFDBD3D3),
-  //     appBar: AppBar(
-  //       backgroundColor: Colors.white,
-  //       elevation: 0,
-  //       title: Row(
-  //         children: [
-  //           Icon(Icons.book, color: Colors.black), // Icon Buku di Kiri
-  //           const SizedBox(width: 10),
-  //         ],
-  //       ),
-  //       bottom: TabBar(
-  //         controller: _tabController,
-  //         indicatorColor: const Color(0xFFEC8305),
-  //         labelColor: const Color(0xFFEC8305),
-  //         unselectedLabelColor: Colors.grey,
-  //         labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-  //         tabs: const [
-  //           Tab(text: 'ALL BOOKS'),
-  //           Tab(text: 'NEW BOOK'),
-  //         ],
-  //       ),
-  //     ),
-  //     body: TabBarView(
-  //       controller: _tabController,
-  //       children: [
-  //         Column(
-  //           children: [
-  //             const SizedBox(height: 20),
-  //             Padding(
-  //               padding: const EdgeInsets.symmetric(horizontal: 16.0),
-  //               child: TextField(
-  //                 controller: _searchController,
-  //                 decoration: InputDecoration(
-  //                   labelText: 'Search by Book Name',
-  //                   labelStyle: const TextStyle(color: Colors.black),
-  //                   prefixIcon: const Icon(Icons.search, color: Colors.black),
-  //                   filled: true,
-  //                   fillColor: Colors.white,
-  //                   border: OutlineInputBorder(
-  //                     borderRadius: BorderRadius.circular(8),
-  //                     borderSide: BorderSide.none,
-  //                   ),
-  //                 ),
-  //                 style: const TextStyle(color: Colors.black),
-  //               ),
-  //             ),
-  //             const SizedBox(height: 10),
-  //             Expanded(
-  //               child: FutureBuilder<List<dynamic>>(
-  //                 future: books,
-  //                 builder: (context, snapshot) {
-  //                   if (snapshot.connectionState == ConnectionState.waiting) {
-  //                     return const Center(child: CircularProgressIndicator());
-  //                   } else if (snapshot.hasError) {
-  //                     return Center(
-  //                         child: Text('Error: ${snapshot.error}',
-  //                             style: const TextStyle(color: Colors.black)));
-  //                   } else {
-  //                     _filteredBooks = snapshot.data ?? [];
-  //                     final List<dynamic> displayedBooks =
-  //                         _filterBooks(_searchController.text);
-  //                     return RefreshIndicator(
-  //                       onRefresh: _refreshBooks,
-  //                       child: ListView.builder(
-  //                         itemCount: displayedBooks.length,
-  //                         itemBuilder: (context, index) {
-  //                           final book = displayedBooks[index];
-  //                           return Padding(
-  //                             padding: const EdgeInsets.symmetric(
-  //                                 horizontal: 16.0,
-  //                                 vertical: 4.0), // Mengurangi jarak antar card
-  //                             child: Card(
-  //                               color: const Color(0xFFFFFFFF),
-  //                               shape: RoundedRectangleBorder(
-  //                                 borderRadius: BorderRadius.circular(
-  //                                     8), // Mengurangi border radius
-  //                               ),
-  //                               child: Padding(
-  //                                 padding: const EdgeInsets.all(16.0),
-  //                                 child: Row(
-  //                                   children: [
-  //                                     Container(
-  //                                       width: 50,
-  //                                       height: 50,
-  //                                       decoration: BoxDecoration(
-  //                                         color: const Color(0xFFEFF3F7),
-  //                                         borderRadius:
-  //                                             BorderRadius.circular(8),
-  //                                       ),
-  //                                       child: const Center(
-  //                                         child: Icon(Icons.book,
-  //                                             color: Colors.grey),
-  //                                       ),
-  //                                     ),
-  //                                     const SizedBox(width: 16),
-  //                                     Expanded(
-  //                                       child: Column(
-  //                                         crossAxisAlignment:
-  //                                             CrossAxisAlignment.start,
-  //                                         children: [
-  //                                           Text(
-  //                                             book['name'],
-  //                                             style: const TextStyle(
-  //                                               fontWeight: FontWeight.bold,
-  //                                               fontSize: 16,
-  //                                               color: Colors.black,
-  //                                             ),
-  //                                           ),
-  //                                           const SizedBox(height: 4),
-  //                                           Text(
-  //                                             'Author: ${book['author']}',
-  //                                             style: const TextStyle(
-  //                                                 color: Colors.black54),
-  //                                           ),
-  //                                           Text(
-  //                                             'Published Year: ${book['publishedYear']}',
-  //                                             style: const TextStyle(
-  //                                                 color: Colors.black54),
-  //                                           ),
-  //                                         ],
-  //                                       ),
-  //                                     ),
-  //                                     IconButton(
-  //                                       icon: const Icon(
-  //                                           Icons.arrow_forward_ios,
-  //                                           color: Color(0xFFEC8305)),
-  //                                       onPressed: () async {
-  //                                         final result = await Navigator.push(
-  //                                           context,
-  //                                           MaterialPageRoute(
-  //                                             builder: (context) =>
-  //                                                 BookDetailScreen(book: book),
-  //                                           ),
-  //                                         );
-  //                                         if (result == 'deleted') {
-  //                                           _refreshBooks();
-  //                                         }
-  //                                       },
-  //                                     ),
-  //                                   ],
-  //                                 ),
-  //                               ),
-  //                             ),
-  //                           );
-  //                         },
-  //                       ),
-  //                     );
-  //                   }
-  //                 },
-  //               ),
-  //             ),
-  //           ],
-  //         ),
-  //         const AddBookScreen(),
-  //       ],
-  //     ),
-  //   );
-  // }
 }

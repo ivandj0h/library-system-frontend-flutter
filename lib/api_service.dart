@@ -25,14 +25,14 @@ class ApiService {
 
   // Method baru untuk mengupdate buku
   Future<void> updateBook(
-      String bookId, Map<String, dynamic> updatedData) async {
+      String id, Map<String, dynamic> updatedBookData) async {
     final response = await http.put(
-      Uri.parse('$baseUrl/books/$bookId'),
+      Uri.parse('$baseUrl/books/$id'),
       headers: {
-        'Authorization': authToken,
+        'Authorization': 'my-static-token-123',
         'Content-Type': 'application/json',
       },
-      body: json.encode(updatedData),
+      body: json.encode(updatedBookData),
     );
 
     if (response.statusCode != 200) {
