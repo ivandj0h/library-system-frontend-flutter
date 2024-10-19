@@ -67,14 +67,6 @@ class _EditBookScreenState extends State<EditBookScreen> {
     try {
       await apiService.updateBook(widget.book['id'], updatedBook);
 
-      Fluttertoast.showToast(
-        msg: "Book updated successfully",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.TOP,
-        backgroundColor: Colors.green,
-        textColor: Colors.white,
-      );
-
       Navigator.pop(context, true);
     } catch (e) {
       Fluttertoast.showToast(

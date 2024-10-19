@@ -6,9 +6,9 @@ class ApiService {
   final String authToken = 'my-static-token-123';
 
   // Fetching books with pagination
-  Future<Map<String, dynamic>> fetchBooks({required int page}) async {
+  Future<Map<String, dynamic>> fetchBooks() async {
     final response = await http.get(
-      Uri.parse('http://localhost:9000/api/v1/books?page=$page'),
+      Uri.parse('http://localhost:9000/api/v1/books'),
       headers: {
         'Authorization': 'my-static-token-123',
         'Content-Type': 'application/json',

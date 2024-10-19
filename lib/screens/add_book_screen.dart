@@ -111,7 +111,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
       ),
-      backgroundColor: Colors.white, // Set background putih
+      backgroundColor: Colors.white, 
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
