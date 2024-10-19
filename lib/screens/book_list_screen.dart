@@ -227,14 +227,12 @@ class _BookListScreenState extends State<BookListScreen>
                                             ),
                                           );
                                           if (result == 'deleted') {
-                                            _fetchAndSortBooks(); // Panggil ulang API jika buku dihapus
+                                            _fetchAndSortBooks();
                                           } else if (result == 'goToAllBooks') {
-                                            // Tampilkan spinner lalu fetch ulang data
                                             setState(() {
-                                              _isLoading =
-                                                  true; // Tampilkan spinner
+                                              _isLoading = true;
                                             });
-                                            await _fetchAndSortBooks(); // Panggil ulang data
+                                            await _fetchAndSortBooks();
                                           }
                                         },
                                       ),
