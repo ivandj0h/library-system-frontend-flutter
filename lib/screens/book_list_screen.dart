@@ -244,7 +244,18 @@ class _BookListScreenState extends State<BookListScreen>
                                               ),
                                             );
 
-                                            if (result == 'showSpinner') {
+                                            print('Result: $result');
+
+                                            if (result == 'deleted') {
+                                              _fetchBooks();
+                                            } else if (result ==
+                                                'backToAllBooks') {
+                                              setState(() {
+                                                _isLoading = true;
+                                              });
+                                              _fetchBooks();
+                                            } else if (result ==
+                                                'showSpinner') {
                                               setState(() {
                                                 _isLoading = true;
                                               });
