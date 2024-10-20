@@ -241,23 +241,20 @@ class BookListScreenState extends State<BookListScreen>
                                           style: const TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 16,
-                                            color: Colors
-                                                .black,
+                                            color: Colors.black,
                                           ),
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
                                           '${book['author'] ?? 'Unknown Author'}, ${book['year'] ?? 'Unknown Year'}',
                                           style: const TextStyle(
-                                            color: Colors
-                                                .black54,
+                                            color: Colors.black54,
                                             fontSize: 14,
                                           ),
                                         ),
                                         const Divider(
                                             thickness: 1,
-                                            color: Colors
-                                                .black12), 
+                                            color: Colors.black12),
                                         TextButton(
                                           onPressed: () async {
                                             final result = await Navigator.push(
