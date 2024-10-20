@@ -9,11 +9,10 @@ class BookDetailScreen extends StatefulWidget {
   const BookDetailScreen({super.key, required this.bookId});
 
   @override
-  // ignore: library_private_types_in_public_api
-  _BookDetailScreenState createState() => _BookDetailScreenState();
+  BookDetailScreenState createState() => BookDetailScreenState();
 }
 
-class _BookDetailScreenState extends State<BookDetailScreen> {
+class BookDetailScreenState extends State<BookDetailScreen> {
   Map<String, dynamic>? bookDetails;
   final ApiService apiService = ApiService();
   bool isLoading = true;
@@ -95,7 +94,9 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         textColor: Colors.white,
       );
 
-      Navigator.pop(context, 'deleted');
+      if (mounted) {
+        Navigator.pop(context, 'deleted');
+      }
     } catch (e) {
       Fluttertoast.showToast(
         msg: "Failed to delete book: $e",

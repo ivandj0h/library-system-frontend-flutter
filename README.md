@@ -1,8 +1,12 @@
 # Library-system Frontend (Flutter)
 
-## Description
+## Getting Started
 
-## Usage
+### Description
+
+
+
+### Usage
 
 To run the backend service :
 
@@ -10,4 +14,10 @@ To run the backend service :
 npm run dev
 ```
 
-## ScreenShoot
+### ScreenShoot
+
+## Credits
+
+Linkedin : [ivandjoh](https://linkedin.com/in/ivandjoh)
+
+Github : [ivandjoh](https://github.com/ivandj0h)

@@ -11,11 +11,10 @@ class EditBookScreen extends StatefulWidget {
   });
 
   @override
-  // ignore: library_private_types_in_public_api
-  _EditBookScreenState createState() => _EditBookScreenState();
+  EditBookScreenState createState() => EditBookScreenState();
 }
 
-class _EditBookScreenState extends State<EditBookScreen> {
+class EditBookScreenState extends State<EditBookScreen> {
   final ApiService apiService = ApiService();
   late TextEditingController _titleController;
   late TextEditingController _authorController;
