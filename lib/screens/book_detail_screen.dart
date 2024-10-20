@@ -9,6 +9,7 @@ class BookDetailScreen extends StatefulWidget {
   const BookDetailScreen({super.key, required this.bookId});
 
   @override
+  // ignore: library_private_types_in_public_api
   _BookDetailScreenState createState() => _BookDetailScreenState();
 }
 
@@ -65,7 +66,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
               },
             ),
             ElevatedButton(
-              child: const Text('Yes', style: TextStyle(color: Colors.white)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFdf3123),
                 shape: RoundedRectangleBorder(
@@ -76,6 +76,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                 Navigator.of(context).pop();
                 _deleteBook();
               },
+              child: const Text('Yes', style: TextStyle(color: Colors.white)),
             ),
           ],
         );
@@ -93,6 +94,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         backgroundColor: Colors.green,
         textColor: Colors.white,
       );
+      // ignore: use_build_context_synchronously
       Navigator.pop(context, 'deleted');
     } catch (e) {
       Fluttertoast.showToast(
@@ -196,10 +198,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                             );
                           }
                         },
-                        child: const Text(
-                          'Edit Book',
-                          style: TextStyle(color: Colors.white),
-                        ),
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 15),
                           backgroundColor: const Color(0xFF024CAA),
@@ -208,14 +206,14 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                           ),
                           minimumSize: const Size.fromHeight(50),
                         ),
+                        child: const Text(
+                          'Edit Book',
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
                       const SizedBox(height: 10),
                       ElevatedButton(
                         onPressed: _showDeleteConfirmationDialog,
-                        child: const Text(
-                          'Delete Book',
-                          style: TextStyle(color: Colors.white),
-                        ),
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 15),
                           backgroundColor: const Color(0xFFdf3123),
@@ -224,14 +222,14 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                           ),
                           minimumSize: const Size.fromHeight(50),
                         ),
+                        child: const Text(
+                          'Delete Book',
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
                       const SizedBox(height: 10),
                       ElevatedButton(
                         onPressed: _goBackToAllBooks,
-                        child: const Text(
-                          'Back to All Books',
-                          style: TextStyle(color: Colors.white),
-                        ),
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 15),
                           backgroundColor: const Color(0xFFEC8305),
@@ -239,6 +237,10 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           minimumSize: const Size.fromHeight(50),
+                        ),
+                        child: const Text(
+                          'Back to All Books',
+                          style: TextStyle(color: Colors.white),
                         ),
                       ),
                     ],
