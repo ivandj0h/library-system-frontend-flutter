@@ -17,6 +17,7 @@ dependencies:
   fluttertoast: ^8.2.1
   test: ^1.2.2
   logger: 1.0.0
+  shimmer: ^2.0.0
 
 
 dev_dependencies:
