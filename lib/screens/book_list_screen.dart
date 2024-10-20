@@ -195,57 +195,53 @@ class BookListScreenState extends State<BookListScreen>
                               final book = _books[index];
                               return Padding(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 16.0, vertical: 1.0),
-                                child: Card(
-                                  elevation: 2,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
+                                    horizontal: 16.0,
+                                    vertical:
+                                        8.0), // Jarak antar card lebih lega
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white, // Background putih
+                                    borderRadius: BorderRadius.circular(
+                                        8), // Bikin corner lebih smooth
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey.withOpacity(0.2),
+                                        spreadRadius: 1,
+                                        blurRadius: 5,
+                                        offset: Offset(0, 2), // shadow ke bawah
+                                      ),
+                                    ],
                                   ),
                                   child: Padding(
-                                    padding: const EdgeInsets.all(16.0),
-                                    child: Row(
+                                    padding: const EdgeInsets.all(
+                                        16.0), // Padding internal card
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        Container(
-                                          width: 10,
-                                          height: 10,
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFFEFF3F7),
-                                            borderRadius:
-                                                BorderRadius.circular(8),
-                                          ),
-                                          child: const Center(
-                                            child: Icon(Icons.book,
-                                                color: Colors.grey),
+                                        Text(
+                                          book['title'] ?? 'No Title Available',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                            color: Colors
+                                                .black, // Warna teks title hitam
                                           ),
                                         ),
-                                        const SizedBox(width: 26),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                book['title'] ??
-                                                    'No Title Available',
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 16,
-                                                  color: Colors.black,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                '${book['author'] ?? 'Unknown Author'}, ${book['year'] ?? 'Unknown Year'}',
-                                                style: const TextStyle(
-                                                    color: Colors.black54),
-                                              ),
-                                            ],
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          '${book['author'] ?? 'Unknown Author'}, ${book['year'] ?? 'Unknown Year'}',
+                                          style: const TextStyle(
+                                            color: Colors
+                                                .black54, // Warna subtitle lebih soft
+                                            fontSize: 14,
                                           ),
                                         ),
-                                        IconButton(
-                                          icon: const Icon(
-                                              Icons.arrow_forward_ios,
-                                              color: Color(0xFFEC8305)),
+                                        const Divider(
+                                            thickness: 1,
+                                            color: Colors
+                                                .black12), // Divider antar item
+                                        TextButton(
                                           onPressed: () async {
                                             final result = await Navigator.push(
                                               context,
@@ -268,7 +264,6 @@ class BookListScreenState extends State<BookListScreen>
                                               setState(() {
                                                 _isLoading = true;
                                               });
-
                                               Future.delayed(
                                                   const Duration(seconds: 2),
                                                   () {
@@ -276,6 +271,9 @@ class BookListScreenState extends State<BookListScreen>
                                               });
                                             }
                                           },
+                                          child: const Text('View Details',
+                                              style: TextStyle(
+                                                  color: Colors.blue)),
                                         ),
                                       ],
                                     ),
@@ -285,7 +283,7 @@ class BookListScreenState extends State<BookListScreen>
                             },
                           ),
                         ),
-                      ),
+                      )
                     ],
                   ),
             AddBookScreen(tabController: _tabController),

@@ -53,7 +53,53 @@ it's very helpful to run the project on web because you can see the project on y
 - [http](https://pub.dev/packages/http)
 - [fluttertoast](https://pub.dev/packages/fluttertoast)
 
+### Built Production
+
+- [x] Android
+
+to build the project for android, you can run this command :
+
+```bash
+flutter build apk
+```
+
+- [x] IOS
+
+to build the project for ios, you can run this command :
+
+```bash
+flutter build ios
+```
+
+- [x] Web
+
+to build the project for web, you can run this command :
+
+```bash
+flutter build web
+```
+
 ### ScreenShoot
+
+- Home Page (Get all books)
+
+![Home Page](./public/book_lists.png)
+
+- Get Book by ID
+
+![Get Book by ID](./public/book_details.png)
+
+- Add or Create Book
+
+![Add or Create Book](./public/book_created.png)
+
+- Update Book
+
+![Update Book](./public/book_updated.png)
+
+- Delete Book
+
+![Delete Book](./public/book_deleted.png)
 
 ## Credits
 

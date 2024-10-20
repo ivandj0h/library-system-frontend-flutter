@@ -46,16 +46,17 @@ class ApiService {
     }
   }
 
-  // Method baru untuk mengupdate buku
-  Future<void> updateBook(
-      String id, Map<String, dynamic> updatedBookData) async {
+  // Method untuk update book
+  Future<void> updateBook(String id, Map<String, dynamic> updatedBook) async {
+    final url = 'http://localhost:9000/api/v1/books/$id';
+
     final response = await http.put(
-      Uri.parse('$baseUrl/books/$id'),
+      Uri.parse(url),
       headers: {
         'Authorization': 'my-static-token-123',
         'Content-Type': 'application/json',
       },
-      body: json.encode(updatedBookData),
+      body: jsonEncode(updatedBook),
     );
 
     if (response.statusCode != 200) {
