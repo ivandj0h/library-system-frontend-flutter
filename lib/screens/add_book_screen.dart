@@ -7,11 +7,10 @@ class AddBookScreen extends StatefulWidget {
   const AddBookScreen({super.key, required this.tabController});
 
   @override
-  // ignore: library_private_types_in_public_api
-  _AddBookScreenState createState() => _AddBookScreenState();
+  AddBookScreenState createState() => AddBookScreenState();
 }
 
-class _AddBookScreenState extends State<AddBookScreen> {
+class AddBookScreenState extends State<AddBookScreen> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _authorController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
@@ -112,7 +111,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
       ),
-      backgroundColor: Colors.white, 
+      backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

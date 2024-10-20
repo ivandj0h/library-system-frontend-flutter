@@ -8,11 +8,10 @@ class BookListScreen extends StatefulWidget {
   const BookListScreen({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
-  _BookListScreenState createState() => _BookListScreenState();
+  BookListScreenState createState() => BookListScreenState();
 }
 
-class _BookListScreenState extends State<BookListScreen>
+class BookListScreenState extends State<BookListScreen>
     with SingleTickerProviderStateMixin {
   final ApiService apiService = ApiService();
   List<dynamic> _books = [];
@@ -243,9 +242,6 @@ class _BookListScreenState extends State<BookListScreen>
                                                         bookId: book['id']),
                                               ),
                                             );
-
-                                            print('Result: $result');
-
                                             if (result == 'deleted') {
                                               _fetchBooks();
                                             } else if (result ==
