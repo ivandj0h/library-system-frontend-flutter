@@ -8,6 +8,7 @@ class BookListScreen extends StatefulWidget {
   const BookListScreen({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _BookListScreenState createState() => _BookListScreenState();
 }
 
@@ -65,12 +66,6 @@ class _BookListScreenState extends State<BookListScreen>
       setState(() {
         _isLoading = false;
       });
-    }
-  }
-
-  void _handleTabSelectionChange() {
-    if (_tabController.index == 0) {
-      _fetchBooks();
     }
   }
 
@@ -188,7 +183,7 @@ class _BookListScreenState extends State<BookListScreen>
                               final book = _books[index];
                               return Padding(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 16.0, vertical: 8.0),
+                                    horizontal: 16.0, vertical: 1.0),
                                 child: Card(
                                   elevation: 2,
                                   shape: RoundedRectangleBorder(
@@ -199,8 +194,8 @@ class _BookListScreenState extends State<BookListScreen>
                                     child: Row(
                                       children: [
                                         Container(
-                                          width: 50,
-                                          height: 50,
+                                          width: 10,
+                                          height: 10,
                                           decoration: BoxDecoration(
                                             color: const Color(0xFFEFF3F7),
                                             borderRadius:
@@ -211,7 +206,7 @@ class _BookListScreenState extends State<BookListScreen>
                                                 color: Colors.grey),
                                           ),
                                         ),
-                                        const SizedBox(width: 16),
+                                        const SizedBox(width: 26),
                                         Expanded(
                                           child: Column(
                                             crossAxisAlignment:

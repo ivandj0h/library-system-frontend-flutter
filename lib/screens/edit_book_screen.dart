@@ -11,6 +11,7 @@ class EditBookScreen extends StatefulWidget {
   });
 
   @override
+  // ignore: library_private_types_in_public_api
   _EditBookScreenState createState() => _EditBookScreenState();
 }
 
@@ -67,6 +68,7 @@ class _EditBookScreenState extends State<EditBookScreen> {
     try {
       await apiService.updateBook(widget.book['id'], updatedBook);
 
+      // ignore: use_build_context_synchronously
       Navigator.pop(context, true);
     } catch (e) {
       Fluttertoast.showToast(

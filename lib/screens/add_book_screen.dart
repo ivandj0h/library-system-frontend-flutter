@@ -7,6 +7,7 @@ class AddBookScreen extends StatefulWidget {
   const AddBookScreen({super.key, required this.tabController});
 
   @override
+  // ignore: library_private_types_in_public_api
   _AddBookScreenState createState() => _AddBookScreenState();
 }
 
