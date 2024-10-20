@@ -174,20 +174,24 @@ class BookDetailScreenState extends State<BookDetailScreen> {
                     'Publisher: ${bookDetails!['publisher']}',
                     style: const TextStyle(fontSize: 16, color: Colors.black54),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 50),
                   const Divider(thickness: 1, color: Colors.black12),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 50),
                   Column(
                     children: [
                       ElevatedButton(
                         onPressed: () async {
-                          final result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  EditBookScreen(book: bookDetails!),
+                          final result = await showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(25.0)),
                             ),
+                            builder: (context) =>
+                                EditBookScreen(book: bookDetails!),
                           );
+
                           if (result == true) {
                             _fetchBookDetails();
                             Fluttertoast.showToast(

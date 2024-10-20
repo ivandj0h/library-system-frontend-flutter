@@ -1,75 +1,73 @@
+import 'package:logger/logger.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import '../api_service.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import '../api_service.dart';
 
 class EditBookScreen extends StatefulWidget {
   final Map<String, dynamic> book;
 
-  const EditBookScreen({
-    super.key,
-    required this.book,
-  });
+  const EditBookScreen({super.key, required this.book});
 
   @override
   EditBookScreenState createState() => EditBookScreenState();
 }
 
 class EditBookScreenState extends State<EditBookScreen> {
-  final ApiService apiService = ApiService();
-  late TextEditingController _titleController;
-  late TextEditingController _authorController;
-  late TextEditingController _descriptionController;
-  late TextEditingController _yearController;
-  late TextEditingController _pageController;
-  late TextEditingController _publisherController;
-  bool isLoading = false;
+  late TextEditingController titleController;
+  late TextEditingController authorController;
+  late TextEditingController descriptionController;
+  late TextEditingController yearController;
+  late TextEditingController pageController;
+  late TextEditingController publisherController;
+
+  late final ApiService apiService;
+  final logger = Logger();
 
   @override
   void initState() {
     super.initState();
-    _titleController = TextEditingController(text: widget.book['title']);
-    _authorController = TextEditingController(text: widget.book['author']);
-    _descriptionController =
+    apiService = ApiService();
+    titleController = TextEditingController(text: widget.book['title']);
+    authorController = TextEditingController(text: widget.book['author']);
+    descriptionController =
         TextEditingController(text: widget.book['description']);
-    _yearController =
+    yearController =
         TextEditingController(text: widget.book['year'].toString());
-    _pageController =
+    pageController =
         TextEditingController(text: widget.book['page'].toString());
-    _publisherController =
-        TextEditingController(text: widget.book['publisher']);
+    publisherController = TextEditingController(text: widget.book['publisher']);
+
+    // Setup logging level based on environment
+    if (kReleaseMode) {
+      Logger.level = Level.error;
+    } else {
+      Logger.level = Level.debug;
+    }
   }
 
-  @override
-  void dispose() {
-    _titleController.dispose();
-    _authorController.dispose();
-    _descriptionController.dispose();
-    _yearController.dispose();
-    _pageController.dispose();
-    _publisherController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _saveChanges() async {
-    setState(() {
-      isLoading = true;
-    });
-
+  Future<void> _saveBook() async {
     final updatedBook = {
-      'title': _titleController.text,
-      'author': _authorController.text,
-      'description': _descriptionController.text,
-      'year': int.tryParse(_yearController.text) ?? 0,
-      'page': int.tryParse(_pageController.text) ?? 0,
-      'publisher': _publisherController.text,
+      'id': widget.book['id'],
+      'title': titleController.text,
+      'author': authorController.text,
+      'description': descriptionController.text,
+      'year': int.parse(yearController.text),
+      'page': int.parse(pageController.text),
+      'publisher': publisherController.text,
     };
 
-    try {
-      await apiService.updateBook(widget.book['id'], updatedBook);
+    // Log untuk ngecek data sebelum dikirim
+    logger.d('Updated Book: $updatedBook');
 
-      // ignore: use_build_context_synchronously
-      Navigator.pop(context, true);
+    try {
+      await apiService.updateBook(updatedBook['id'], updatedBook);
+
+      if (mounted) {
+        Navigator.pop(context, true);
+      }
     } catch (e) {
+      logger.e('Error updating book: $e');
       Fluttertoast.showToast(
         msg: "Failed to update book: $e",
         toastLength: Toast.LENGTH_SHORT,
@@ -77,91 +75,125 @@ class EditBookScreenState extends State<EditBookScreen> {
         backgroundColor: Colors.red,
         textColor: Colors.white,
       );
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
     }
   }
 
   @override
+  void dispose() {
+    titleController.dispose();
+    authorController.dispose();
+    descriptionController.dispose();
+    yearController.dispose();
+    pageController.dispose();
+    publisherController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Edit Book'),
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 16,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              TextField(
-                controller: _titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Title',
-                ),
+      child: Wrap(
+        children: [
+          Center(
+            child: Text(
+              'Edit Book',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
               ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _authorController,
-                decoration: const InputDecoration(
-                  labelText: 'Author',
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _descriptionController,
-                decoration: const InputDecoration(
-                  labelText: 'Description',
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _yearController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Published Year',
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _pageController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Pages',
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _publisherController,
-                decoration: const InputDecoration(
-                  labelText: 'Publisher',
-                ),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: isLoading ? null : _saveChanges,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFDF3123),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  minimumSize: const Size.fromHeight(50),
-                ),
-                child: isLoading
-                    ? const CircularProgressIndicator(
-                        color: Colors.white,
-                      )
-                    : const Text(
-                        'Save Changes',
-                        style: TextStyle(color: Colors.white),
-                      ),
-              ),
-            ],
+            ),
           ),
-        ),
+          SizedBox(height: 20),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: TextField(
+              controller: titleController,
+              decoration: InputDecoration(
+                labelText: 'Title',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: TextField(
+              controller: authorController,
+              decoration: InputDecoration(
+                labelText: 'Author',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: TextField(
+              controller: descriptionController,
+              decoration: InputDecoration(
+                labelText: 'Description',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: TextField(
+              controller: yearController,
+              decoration: InputDecoration(
+                labelText: 'Published Year',
+                border: OutlineInputBorder(),
+              ),
+              keyboardType: TextInputType.number,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: TextField(
+              controller: pageController,
+              decoration: InputDecoration(
+                labelText: 'Pages',
+                border: OutlineInputBorder(),
+              ),
+              keyboardType: TextInputType.number,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: TextField(
+              controller: publisherController,
+              decoration: InputDecoration(
+                labelText: 'Publisher',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
+          SizedBox(height: 20),
+          Divider(
+            thickness: 1,
+            color: Colors.black12,
+          ),
+          SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: _saveBook,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              padding: EdgeInsets.symmetric(vertical: 16.0),
+              minimumSize: Size(double.infinity, 50),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(
+              'Save Changes',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
       ),
     );
   }
