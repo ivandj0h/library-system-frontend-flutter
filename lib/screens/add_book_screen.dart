@@ -107,7 +107,7 @@ class AddBookScreenState extends State<AddBookScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Book'),
+        title: const Text('Add New Book'),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
       ),
