@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shimmer/shimmer.dart';
 import '../api_service.dart';
 import 'add_book_screen.dart';
 import 'book_detail_screen.dart';
@@ -84,6 +85,29 @@ class BookListScreenState extends State<BookListScreen>
         .toList();
   }
 
+  Widget _buildShimmer() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: ListView.builder(
+        itemCount: 6,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Container(
+              height: 80,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _tabController.dispose();
@@ -134,10 +158,7 @@ class BookListScreenState extends State<BookListScreen>
           controller: _tabController,
           children: [
             _isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ))
+                ? _buildShimmer()
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -195,26 +216,22 @@ class BookListScreenState extends State<BookListScreen>
                               final book = _books[index];
                               return Padding(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 16.0,
-                                    vertical:
-                                        8.0), // Jarak antar card lebih lega
+                                    horizontal: 16.0, vertical: 8.0),
                                 child: Container(
                                   decoration: BoxDecoration(
-                                    color: Colors.white, // Background putih
-                                    borderRadius: BorderRadius.circular(
-                                        8), // Bikin corner lebih smooth
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(8),
                                     boxShadow: [
                                       BoxShadow(
                                         color: Colors.grey.withOpacity(0.2),
                                         spreadRadius: 1,
                                         blurRadius: 5,
-                                        offset: Offset(0, 2), // shadow ke bawah
+                                        offset: Offset(0, 2),
                                       ),
                                     ],
                                   ),
                                   child: Padding(
-                                    padding: const EdgeInsets.all(
-                                        16.0), // Padding internal card
+                                    padding: const EdgeInsets.all(16.0),
                                     child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
@@ -225,7 +242,7 @@ class BookListScreenState extends State<BookListScreen>
                                             fontWeight: FontWeight.bold,
                                             fontSize: 16,
                                             color: Colors
-                                                .black, // Warna teks title hitam
+                                                .black,
                                           ),
                                         ),
                                         const SizedBox(height: 4),
@@ -233,14 +250,14 @@ class BookListScreenState extends State<BookListScreen>
                                           '${book['author'] ?? 'Unknown Author'}, ${book['year'] ?? 'Unknown Year'}',
                                           style: const TextStyle(
                                             color: Colors
-                                                .black54, // Warna subtitle lebih soft
+                                                .black54,
                                             fontSize: 14,
                                           ),
                                         ),
                                         const Divider(
                                             thickness: 1,
                                             color: Colors
-                                                .black12), // Divider antar item
+                                                .black12), 
                                         TextButton(
                                           onPressed: () async {
                                             final result = await Navigator.push(
