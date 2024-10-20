@@ -94,7 +94,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         backgroundColor: Colors.green,
         textColor: Colors.white,
       );
-      // ignore: use_build_context_synchronously
+
       Navigator.pop(context, 'deleted');
     } catch (e) {
       Fluttertoast.showToast(
